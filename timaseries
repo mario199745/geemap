@@ -1,0 +1,26 @@
+// Cargar polígono Bolivia
+var Bolivia = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017')
+.filter(ee.Filter.eq('country_na', 'Bolivia'))
+.geometry();
+
+// Cargar producto NDVI MODIS
+var NDVI_mod = ee.ImageCollection('MODIS/006/MOD13A2').select('NDVI')
+  .filterBounds(Bolivia)
+  .filterDate ('2018-01-01', '2018-12-31') // Fecha para abarcar en el timelapse
+  .map(function(image){return image.clip(Bolivia);});
+
+// Definir parámetros de la visualización
+var vis = { 
+  palette: [
+    'FFFFFF', 'CE7E45', 'DF923D', 'F1B555', 'FCD163', '99B718', '74A901',
+    '66A000', '529400', '3E8601', '207401', '056201', '004C00', '023B01',
+    '012E01', '011D01', '011301'],
+  crs: 'EPSG:4326',
+  min: 0.0,
+  max: 9000.0, // Seleccionar valores de píxel
+  framesPerSecond: 2, // Seleccionar las escenas por segundo (más escenas, más rápido)
+  dimensions: '600',}; // Dimensión máxima del tamaño del gif
+
+// Generar GIF
+var gif = NDVI_mod.getVideoThumbURL(vis);
+print(gif);
